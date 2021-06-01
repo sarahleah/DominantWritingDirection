@@ -1133,5 +1133,6 @@ const dominantWritingDirection = text => {
   return scripts.map(({direction, count}) => {
     return `${Math.round(count * 100 / total)}% ${direction}`;
   }).join(", ");
-}
+  }
+
 }
