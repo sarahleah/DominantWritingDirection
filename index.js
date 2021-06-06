@@ -1120,19 +1120,65 @@ if (typeof module != "undefined" && module.exports && (typeof window == "undefin
 if (typeof global != "undefined" && !global.SCRIPTS)
   global.SCRIPTS = SCRIPTS;
 
-const dominantWritingDirection = text => {
-  function textScripts(text) {
-  let scripts = countBy(text, char => {
-    let script = characterScript(char.codePointAt(0));
-    return script ? script.direction : "none";
-  }).filter(({direction}) => direction != "none");
-
-  let total = scripts.reduce((n, {count}) => n + count, 0);
-  if (total == 0) return "No scripts found";
-
-  return scripts.map(({direction, count}) => {
-    return `${Math.round(count * 100 / total)}% ${direction}`;
-  }).join(", ");
+  function characterScript(code) {
+  for (let script of SCRIPTS) {
+    if (script.ranges.some(([from, to]) => {
+      return code >= from && code < to;
+    })) {
+      return script;
+    }
+  }
+  return null;
   }
 
-}
+  function countBy(items, groupName) {
+    let counts = [];
+    for (let item of items) {
+      let name = groupName(item);
+      let known = counts.findIndex(c => c.name == name);
+      if (known == -1) {
+        counts.push({ name, count: 1 });
+      } else {
+        counts[known].count++;
+      }
+    }
+    return counts;
+  }
+
+  function textScripts(text) {
+    let scripts = countBy(text, char => {
+      let script = characterScript(char.codePointAt(0));
+      console.log(script)
+      return script.direction ? script.direction : "none";
+  }).filter(({direction}) => direction != "none");
+
+      switch (script != null) {
+        case script.direction == 'ltr':
+        return 'ltr';
+        break;
+        case script.direction == 'rtl':
+        return 'rtl';
+        break;
+        case script.direction == 'ttb':
+        return 'ttb';
+        break;
+      } 
+      if (script == null) {
+        return "n/a"
+      }
+  
+    })
+    console.log(scripts);
+    let total = scripts.reduce((n, { count }) => n + count, 0);
+    if (total == 0) return "No scripts found";
+
+    return scripts.map(({ name, count }) => {
+      return `${Math.round(count * 100 / total)}% ${name}`;
+    }).join(", ");
+  }
+
+console.log(textScripts("Hello!"));
+// → ltr
+console.log(textScripts("Hey, مساء الخير"));
+// → rtl
+textScripts("hello")
